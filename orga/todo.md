@@ -3,7 +3,8 @@
 - nächstes Treffen: morgen 16Uhr (14Uhr treffen für anderes seminar)
 - zeug runterladen
 - local ausführen
-- docker bauen?
+- husky urdf suchen und finden
+- raum neubauen 
 - lib ersetzen
 - das dinge ausprobieren: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/notebooks/HelloPyBullet.ipyn
 
