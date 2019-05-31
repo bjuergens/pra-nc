@@ -33,9 +33,9 @@
       <visual name="body">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/body.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
     </link>
@@ -77,17 +77,26 @@
       <visual name="back_left_wheel">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/wheel.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
     </link>
     <joint name="back_left_joint" type="revolute">
+
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
       <sensor name="back_left_sensor" type="force_torque"><force_torque></force_torque></sensor>
       <parent>base_link</parent>
       <child>back_left_wheel</child>
       <axis>
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
         <xyz>0 1 0</xyz>
         <use_parent_model_frame>true</use_parent_model_frame>
       </axis>
@@ -139,17 +148,26 @@
       <visual name="back_right_wheel">
         <pose>0 0 0 -3.14159 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/wheel.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
     </link>
     <joint name="back_right_joint" type="revolute">
+
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
       <sensor name="back_right_sensor" type="force_torque"><force_torque></force_torque></sensor>
       <parent>base_link</parent>
       <child>back_right_wheel</child>
       <axis>
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
         <xyz>0 1 0</xyz>
         <use_parent_model_frame>true</use_parent_model_frame>
       </axis>
@@ -201,17 +219,25 @@
       <visual name="front_left_wheel">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/wheel.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
     </link>
     <joint name="front_left_joint" type="revolute">
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
       <sensor name="front_left_sensor" type="force_torque"><force_torque></force_torque></sensor>
       <parent>base_link</parent>
       <child>front_left_wheel</child>
       <axis>
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
         <xyz>0 1 0</xyz>
         <use_parent_model_frame>true</use_parent_model_frame>
       </axis>
@@ -263,17 +289,25 @@
       <visual name="front_right_wheel">
         <pose>0 0 0 -3.14159 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/wheel.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
     </link>
     <joint name="front_right_joint" type="revolute">
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
       <sensor name="front_right_sensor" type="force_torque"><force_torque></force_torque></sensor>
       <parent>base_link</parent>
       <child>front_right_wheel</child>
       <axis>
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
         <xyz>0 1 0</xyz>
         <use_parent_model_frame>true</use_parent_model_frame>
       </axis>
@@ -325,9 +359,9 @@
       <visual name="eye_vision_camera">
         <pose>0 0 0 1.570796327 0 -1.570796327</pose>
         <geometry>
-          <mesh>
-            <uri>model://husky_model/meshes/eye_vision_camera.dae</uri>
-          </mesh>
+          <box>
+            <size>2 0.4 2.0</size>
+          </box>
         </geometry>
       </visual>
       <sensor name="camera" type="camera">
@@ -364,6 +398,10 @@
       </sensor>
     </link>
     <joint name="eye_vision_camera_joint" type="revolute">
+      <limit>
+        <lower>0</lower>
+        <upper>3.14159</upper>
+      </limit>
       <parent>base_link</parent>
       <child>eye_vision_camera</child>
       <axis>

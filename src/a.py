@@ -10,8 +10,8 @@ planeId = p.loadSDF("src/my_room.sdf")
 # planeId = p.loadSDF("src/virtual_room.sdf")
 cubeStartPos = [0, 0, 1]
 cubeStartOrientation = p.getQuaternionFromEuler([0, 0, 0])
-boxId = p.loadSDF("src/model.sdf", cubeStartPos, cubeStartOrientation)
-cubePos, cubeOrn = p.getBasePositionAndOrientation(boxId)
+boxId = p.loadSDF("src/model.sdf")
+cubePos, cubeOrn = p.getBasePositionAndOrientation(boxId[0])
 
 useRealTimeSimulation = 0
 

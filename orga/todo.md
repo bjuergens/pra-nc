@@ -5,6 +5,8 @@
 - local ausführen
 - docker bauen?
 - lib ersetzen
+- das dinge ausprobieren: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/notebooks/HelloPyBullet.ipyn
+
 - jupyter zeug
 
 ## done:
