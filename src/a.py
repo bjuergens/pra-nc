@@ -25,12 +25,13 @@ planeB = p.createMultiBody(baseCollisionShapeIndex=planeId, basePosition=[0, -5,
 
 green = [0, 1, 0, 1]
 blue = [0, 0, 1, 1]
+red = [1, 0, 0, 1]
 p.changeVisualShape(planeA, -1, rgbaColor=[0, 1, 0, 1])
 p.changeVisualShape(planeB, -1, rgbaColor=[0, 0, 1, 1])
 
 p.setRealTimeSimulation(0)
 
-targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -15, 15, 0)
+targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -50, 20, 50)
 maxForceSlider = p.addUserDebugParameter("maxForce", 0, 150, 100)
 
 camInfo = p.getDebugVisualizerCamera()
@@ -84,9 +85,33 @@ class my_husky(object):
             camTarget = [camPos[0] + forwardVec[0] * 10, camPos[1] + forwardVec[1] * 10, camPos[2] + forwardVec[2] * 10]
             viewMat = p.computeViewMatrix(camPos, camTarget, camUpVec)
             projMat = camInfo[3]
-            p.getCameraImage(320, 200, viewMatrix=viewMat, projectionMatrix=projMat,
-                             renderer=p.ER_BULLET_HARDWARE_OPENGL)
+            img = p.getCameraImage(100, 100, viewMatrix=viewMat, projectionMatrix=projMat,
+                                   renderer=p.ER_BULLET_HARDWARE_OPENGL)
+            print(self.count_red_pixels(img))
             self.lastCamTime = now
+
+    def count_red_pixels(self, img_arr):
+        """detect left red and right red like nrp
+        pixelformat is guessed, but it seems to work"""
+        w = img_arr[0]  # width of the image, in pixels
+        h = img_arr[1]  # height of the image, in pixels
+        rgbBuffer = img_arr[2]  # color data RGB
+        depBuffer = img_arr[3]  # depth data
+        count_red_right = 0
+        count_red_left = 0
+        count_non_red = 0
+        for y in range(h):
+            for x in range(w):
+                pos = (y * w + x) * 4
+                r, g, b, a = (rgbBuffer[pos], rgbBuffer[pos + 1], rgbBuffer[pos + 2], rgbBuffer[pos + 3])
+                if r > g and r > b:
+                    if x > w / 2:
+                        count_red_right = count_red_right + 1
+                    else:
+                        count_red_left = count_red_left + 1
+                else:
+                    count_non_red = count_non_red + count_non_red
+        return count_red_left, count_red_right, count_non_red
 
 
 my_robot = my_husky()
@@ -95,13 +120,13 @@ while 1:
     count = count + 1
     if count % 10 == 0:
         if count % 2 == 0:
-            p.changeVisualShape(planeA, -1, rgbaColor=blue)
+            p.changeVisualShape(planeA, -1, rgbaColor=red)
             p.changeVisualShape(planeB, -1, rgbaColor=green)
         else:
             p.changeVisualShape(planeA, -1, rgbaColor=green)
-            p.changeVisualShape(planeB, -1, rgbaColor=blue)
+            p.changeVisualShape(planeB, -1, rgbaColor=red)
 
     my_robot.update_cam()
     my_robot.update_control()
     p.stepSimulation()
-    time.sleep(0.0005)
+    # time.sleep(0.0005)
