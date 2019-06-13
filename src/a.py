@@ -36,6 +36,13 @@ maxForceSlider = p.addUserDebugParameter("maxForce", 0, 150, 100)
 
 camInfo = p.getDebugVisualizerCamera()
 
+class my_bain(object):
+
+    def __init__(self):
+        pass
+
+    def process(self, input):
+        pass
 
 class my_husky(object):
 
@@ -85,7 +92,8 @@ class my_husky(object):
             camTarget = [camPos[0] + forwardVec[0] * 10, camPos[1] + forwardVec[1] * 10, camPos[2] + forwardVec[2] * 10]
             viewMat = p.computeViewMatrix(camPos, camTarget, camUpVec)
             projMat = camInfo[3]
-            img = p.getCameraImage(100, 100, viewMatrix=viewMat, projectionMatrix=projMat,
+            # getCameraImage seems to update the debug-view but I don't know why and how
+            img = p.getCameraImage(80, 80, viewMatrix=viewMat, projectionMatrix=projMat,
                                    renderer=p.ER_BULLET_HARDWARE_OPENGL)
             print(self.count_red_pixels(img))
             self.lastCamTime = now
