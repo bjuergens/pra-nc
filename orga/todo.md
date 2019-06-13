@@ -1,11 +1,11 @@
 
 
 - nächstes Treffen: morgen 16Uhr (14Uhr treffen für anderes seminar)
-- zeug runterladen
-- local ausführen
-- husky urdf suchen und finden
-- raum neubauen 
-- lib ersetzen
+- sensoren einbauen
+- brain einbauen
+- sensor-brain loop
+- brain-motor loop
+- full loop
 - das dinge ausprobieren: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/notebooks/HelloPyBullet.ipyn
 
 - jupyter zeug
@@ -14,6 +14,12 @@
 
 - pybullet installiert
 - model-datein aus nrp rauskopiert
+- zeug runterladen
+- local ausführen
+- husky urdf suchen und finden
+- raum neubauen 
+- lib ersetzen
+
 
 ## notizen
 
