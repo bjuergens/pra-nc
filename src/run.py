@@ -64,11 +64,10 @@ class World(object):
 
 class Brain(object):
     def __init__(self):
-        pass
+        self.min_red_ratio = 1000
 
-    @staticmethod
-    def process(count_red_left, count_red_right, count_non_red):
-        if count_red_left + count_red_right < count_non_red / 1000:
+    def process(self, count_red_left, count_red_right, count_non_red):
+        if count_red_left + count_red_right < count_non_red / self.min_red_ratio:
             left_speed = -0.8
             right_speed = 0.8
         else:
