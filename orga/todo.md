@@ -1,15 +1,18 @@
 
 
 - nächstes Treffen: morgen 16Uhr (14Uhr treffen für anderes seminar)
-- sensoren einbauen
-  - http://wiki.ros.org/urdf/XML/sensor
-- brain einbauen
-- sensor-brain loop
-- brain-motor loop
-- full loop
+
+- pynn anschauen
+- braiterberg brain bauen
+
 - das dinge ausprobieren: https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/notebooks/HelloPyBullet.ipyn
 
 - jupyter zeug
+  - docker?
+  - jupyter installieren
+  - HelloPyBullet.ipynb anschauen
+  - zu DIRECT umbauen
+  - Bild rausholen
 
 ## done:
 
@@ -20,7 +23,13 @@
 - husky urdf suchen und finden
 - raum neubauen 
 - lib ersetzen
+- sensoren einbauen
+  - http://wiki.ros.org/urdf/XML/sensor
 
+- brain einbauen
+- sensor-brain loop
+- brain-motor loop
+- full loop
 
 ## notizen
 
