@@ -94,8 +94,7 @@ class Husky(object):
 
         self.camInfo = p.getDebugVisualizerCamera()
         for joint in range(p.getNumJoints(self.husky_model)):
-            if 1:
-                print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
+            # print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
             if p.getJointInfo(self.husky_model, joint)[1] == b'user_rail':
                 self.zed_camera_joint = joint
             if p.getJointInfo(self.husky_model, joint)[1] == b'front_left_wheel':
