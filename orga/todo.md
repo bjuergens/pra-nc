@@ -2,6 +2,7 @@
 
 - nächstes Treffen: morgen 16Uhr (14Uhr treffen für anderes seminar)
 - sensoren einbauen
+  - http://wiki.ros.org/urdf/XML/sensor
 - brain einbauen
 - sensor-brain loop
 - brain-motor loop

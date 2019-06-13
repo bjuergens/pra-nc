@@ -31,8 +31,8 @@ p.changeVisualShape(planeB, -1, rgbaColor=[0, 0, 1, 1])
 p.setRealTimeSimulation(0)
 
 
-targetVelocitySlider = p.addUserDebugParameter("wheelVelocity",-5,5,0)
-maxForceSlider = p.addUserDebugParameter("maxForce",0,5,2)
+targetVelocitySlider = p.addUserDebugParameter("wheelVelocity",-15,15,0)
+maxForceSlider = p.addUserDebugParameter("maxForce",0,150,100)
 
 camInfo = p.getDebugVisualizerCamera()
 
@@ -61,9 +61,9 @@ class my_husky(object):
         if now - self.lastConTime > .1:
             maxForce = p.readUserDebugParameter(maxForceSlider)
             targetVelocity = p.readUserDebugParameter(targetVelocitySlider)
-            p.setJointMotorControl2(husky,self.front_left_wheel,p.VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce)
+            p.setJointMotorControl2(husky,self.front_left_wheel,p.VELOCITY_CONTROL,targetVelocity=-targetVelocity,force=maxForce)
+            p.setJointMotorControl2(husky,self.rear_left_wheel,p.VELOCITY_CONTROL,targetVelocity=-targetVelocity,force=maxForce)
             p.setJointMotorControl2(husky,self.front_right_wheel,p.VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce)
-            p.setJointMotorControl2(husky,self.rear_left_wheel,p.VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce)
             p.setJointMotorControl2(husky,self.rear_right_wheel,p.VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce)
             self.lastConTime = now
 
@@ -99,5 +99,5 @@ while 1:
     my_robot.update_cam()
     my_robot.update_control()
     p.stepSimulation()
-    time.sleep(0.005)
+    time.sleep(0.0005)
 
