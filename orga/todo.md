@@ -15,6 +15,12 @@
 - pybullet installiert
 - model-datein aus nrp rauskopiert
 
+## notizen
+
+> DIRECT mode does allow rendering of images using the built-in software renderer through the 'getCameraImage' API. This can be useful for running simulations in the cloud on servers without GPU.
+
+- bullet3/examples/pybullet/notebooks/HelloPyBullet.ipynb
+
 ## versucht und gescheitert
 
 ### virtual_room.sdl in pybullet

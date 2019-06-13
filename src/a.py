@@ -2,34 +2,43 @@
 
 import pybullet as p
 from time import sleep
+import pybullet_data
 
-physicsClient = p.connect(p.GUI)
+physicsClient = p.connect(p.GUI) # p.DIRECT for non-graphical version
 
+p.setAdditionalSearchPath(pybullet_data.getDataPath()) #used by loadURDF
 p.setGravity(0, 0, -10)
-# planeId = p.loadSDF("src/my_room.sdf")
-# planeId = p.loadSDF("bullet3/examples/pybullet/gym/pybullet_data/table/table.urdf")
-
-p.loadURDF("bullet3/data/plane.urdf")
-#%%
-# r2d2=p.loadURDF("r2d2.urdf",[0,0,0.5])
-
-# planeId = p.loadSDF("src/virtual_room.sdf")
+p.loadURDF("plane.urdf")
 cubeStartPos = [0, 0, 1]
 cubeStartOrientation = p.getQuaternionFromEuler([0, 0, 0])
-# boxId_orig = p.loadSDF("src/model.sdf")
-boxId = p.loadURDF("bullet3/examples/pybullet/gym/pybullet_data/husky/husky.urdf",[0,0,0.5])
+
+boxId = p.loadURDF("husky/husky.urdf",cubeStartPos, cubeStartOrientation)
 
 cubePos, cubeOrn = p.getBasePositionAndOrientation(boxId)
 
-useRealTimeSimulation = 0
+planeId = p.createCollisionShape(p.GEOM_BOX, halfExtents=[1,0.25,1])
+planeVisId = p.createVisualShape(p.GEOM_BOX, halfExtents=[1,0.25,1],  rgbaColor=[1, 1, 0, 1])
 
-if (useRealTimeSimulation):
-  p.setRealTimeSimulation(1)
+planeA = p.createMultiBody(baseCollisionShapeIndex=planeId, basePosition=[0,5,2], baseVisualShapeIndex=planeVisId)
+planeB = p.createMultiBody(baseCollisionShapeIndex=planeId, basePosition=[0,-5,2], baseVisualShapeIndex=planeVisId)
+
+green=[0, 1, 0, 1]
+blue=[0, 0, 1, 1]
+p.changeVisualShape(planeA, -1, rgbaColor=[0, 1, 0, 1])
+p.changeVisualShape(planeB, -1, rgbaColor=[0, 0, 1, 1])
+
+p.setRealTimeSimulation(0)
+
+count=0
 
 while 1:
-  if (useRealTimeSimulation):
-    p.setGravity(0, 0, -10)
-    sleep(0.01)  # Time in seconds.
-  else:
+    count = count +1
+    if count%10==0:
+        if count%2==0:
+            p.changeVisualShape(planeA, -1, rgbaColor=blue)
+            p.changeVisualShape(planeB, -1, rgbaColor=green)
+        else:
+            p.changeVisualShape(planeA, -1, rgbaColor=green)
+            p.changeVisualShape(planeB, -1, rgbaColor=blue)
     p.stepSimulation()
-    sleep(0.01)  # Time in seconds.
+    sleep(0.005)
