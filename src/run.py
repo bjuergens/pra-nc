@@ -8,7 +8,7 @@ import pybullet_data
 physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
 
 
-class world(object):
+class World(object):
     green = [0, 1, 0, 1]
     blue = [0, 0, 1, 1]
     red = [1, 0, 0, 1]
@@ -18,16 +18,16 @@ class world(object):
         p.setGravity(0, 0, -10)
         p.loadURDF("plane.urdf")
 
-        planeId = p.createCollisionShape(p.GEOM_BOX, halfExtents=[1, 0.25, 1])
-        planeVisId = p.createVisualShape(p.GEOM_BOX, halfExtents=[1, 0.25, 1], rgbaColor=[1, 1, 0, 1])
+        plane_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=[1, 0.25, 1])
+        plane_vis_id = p.createVisualShape(p.GEOM_BOX, halfExtents=[1, 0.25, 1], rgbaColor=[1, 1, 0, 1])
 
-        self.planeA = p.createMultiBody(baseCollisionShapeIndex=planeId, basePosition=[0, 5, 2],
-                                        baseVisualShapeIndex=planeVisId)
-        self.planeB = p.createMultiBody(baseCollisionShapeIndex=planeId, basePosition=[0, -5, 2],
-                                        baseVisualShapeIndex=planeVisId)
+        self.planeA = p.createMultiBody(baseCollisionShapeIndex=plane_id, basePosition=[0, 5, 2],
+                                        baseVisualShapeIndex=plane_vis_id)
+        self.planeB = p.createMultiBody(baseCollisionShapeIndex=plane_id, basePosition=[0, -5, 2],
+                                        baseVisualShapeIndex=plane_vis_id)
 
-        p.changeVisualShape(self.planeA, -1, rgbaColor=[0, 1, 0, 1])
-        p.changeVisualShape(self.planeB, -1, rgbaColor=[0, 0, 1, 1])
+        p.changeVisualShape(self.planeA, -1, rgbaColor=self.blue)
+        p.changeVisualShape(self.planeB, -1, rgbaColor=self.blue)
 
         p.setRealTimeSimulation(0)
 
@@ -42,11 +42,9 @@ class world(object):
         while 1:
             count_step = count_step + 1
             now = time.time()
-
             if now - last_switch_time > 5:
                 last_switch_time = now
                 count_switch = count_switch + 1
-                print(count_switch)
                 if count_switch % 2 == 0:
                     p.changeVisualShape(self.planeA, -1, rgbaColor=self.green)
                     p.changeVisualShape(self.planeB, -1, rgbaColor=self.red)
@@ -64,12 +62,12 @@ class world(object):
             time.sleep(0.0005)
 
 
-class my_bain(object):
-
+class Brain(object):
     def __init__(self):
         pass
 
-    def process(self, count_red_left, count_red_right, count_non_red):
+    @staticmethod
+    def process(count_red_left, count_red_right, count_non_red):
         if count_red_left + count_red_right < count_non_red / 1000:
             left_speed = -0.8
             right_speed = 0.8
@@ -84,31 +82,29 @@ class my_bain(object):
         return left_speed, right_speed
 
 
-class husky(object):
+class Husky(object):
     maxForce = 0
     targetVelocity = 0
 
     def __init__(self, brain):
         self.brain = brain
-        cubeStartPos = [0, 0, 1]
-        cubeStartOrientation = p.getQuaternionFromEuler([0, 0, 0])
+        self.husky_model = p.loadURDF("husky/husky.urdf",
+                                      basePosition=[0, 0, 1],
+                                      baseOrientation=p.getQuaternionFromEuler([0, 0, 0]))
+
         self.camInfo = p.getDebugVisualizerCamera()
-
-        self.husky = p.loadURDF("husky/husky.urdf", cubeStartPos, cubeStartOrientation)
-
-        cubePos, cubeOrn = p.getBasePositionAndOrientation(self.husky)
-        for joint in range(p.getNumJoints(self.husky)):
+        for joint in range(p.getNumJoints(self.husky_model)):
             if 1:
-                print("joint[", joint, "]=", p.getJointInfo(self.husky, joint))
-            if p.getJointInfo(self.husky, joint)[1] == b'user_rail':
+                print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
+            if p.getJointInfo(self.husky_model, joint)[1] == b'user_rail':
                 self.zed_camera_joint = joint
-            if p.getJointInfo(self.husky, joint)[1] == b'front_left_wheel':
+            if p.getJointInfo(self.husky_model, joint)[1] == b'front_left_wheel':
                 self.front_left_wheel = joint
-            if p.getJointInfo(self.husky, joint)[1] == b'front_right_wheel':
+            if p.getJointInfo(self.husky_model, joint)[1] == b'front_right_wheel':
                 self.front_right_wheel = joint
-            if p.getJointInfo(self.husky, joint)[1] == b'rear_left_wheel':
+            if p.getJointInfo(self.husky_model, joint)[1] == b'rear_left_wheel':
                 self.rear_left_wheel = joint
-            if p.getJointInfo(self.husky, joint)[1] == b'rear_right_wheel':
+            if p.getJointInfo(self.husky_model, joint)[1] == b'rear_right_wheel':
                 self.rear_right_wheel = joint
 
     def update(self):
@@ -118,47 +114,50 @@ class husky(object):
         self.update_control(command_left, command_right)
 
     def update_control(self, command_left, command_right):
-        p.setJointMotorControl2(self.husky, self.front_left_wheel, p.VELOCITY_CONTROL,
+        p.setJointMotorControl2(self.husky_model, self.front_left_wheel, p.VELOCITY_CONTROL,
                                 targetVelocity=command_left * self.targetVelocity,
                                 force=self.maxForce)
-        p.setJointMotorControl2(self.husky, self.rear_left_wheel, p.VELOCITY_CONTROL,
+        p.setJointMotorControl2(self.husky_model, self.rear_left_wheel, p.VELOCITY_CONTROL,
                                 targetVelocity=command_left * self.targetVelocity,
                                 force=self.maxForce)
-        p.setJointMotorControl2(self.husky, self.front_right_wheel, p.VELOCITY_CONTROL,
+        p.setJointMotorControl2(self.husky_model, self.front_right_wheel, p.VELOCITY_CONTROL,
                                 targetVelocity=command_right * self.targetVelocity,
                                 force=self.maxForce)
-        p.setJointMotorControl2(self.husky, self.rear_right_wheel, p.VELOCITY_CONTROL,
+        p.setJointMotorControl2(self.husky_model, self.rear_right_wheel, p.VELOCITY_CONTROL,
                                 targetVelocity=command_right * self.targetVelocity,
                                 force=self.maxForce)
 
     def update_cam(self):
-        ls = p.getLinkState(self.husky, self.zed_camera_joint, computeForwardKinematics=True)
-        camPos = ls[0]
-        camOrn = ls[1]
-        camMat = p.getMatrixFromQuaternion(camOrn)
-        forwardVec = [camMat[0], camMat[3], camMat[6]]
-        camUpVec = [camMat[2], camMat[5], camMat[8]]
-        camTarget = [camPos[0] + forwardVec[0] * 10, camPos[1] + forwardVec[1] * 10, camPos[2] + forwardVec[2] * 10]
-        viewMat = p.computeViewMatrix(camPos, camTarget, camUpVec)
-        projMat = self.camInfo[3]
+        ls = p.getLinkState(self.husky_model, self.zed_camera_joint, computeForwardKinematics=True)
+        cam_pos = ls[0]
+        cam_orn = ls[1]
+        cam_mat = p.getMatrixFromQuaternion(cam_orn)
+        forward_vec = [cam_mat[0], cam_mat[3], cam_mat[6]]
+        cam_up_vec = [cam_mat[2], cam_mat[5], cam_mat[8]]
+        cam_target = [cam_pos[0] + forward_vec[0] * 10,
+                      cam_pos[1] + forward_vec[1] * 10,
+                      cam_pos[2] + forward_vec[2] * 10]
+        view_mat = p.computeViewMatrix(cam_pos, cam_target, cam_up_vec)
+        proj_mat = self.camInfo[3]
         # getCameraImage seems to update the debug-view but I don't know why and how
-        return p.getCameraImage(80, 80, viewMatrix=viewMat, projectionMatrix=projMat,
+        return p.getCameraImage(80, 80, viewMatrix=view_mat, projectionMatrix=proj_mat,
                                 renderer=p.ER_BULLET_HARDWARE_OPENGL)
 
-    def count_red_pixels(self, img_arr):
+    @staticmethod
+    def count_red_pixels(img):
         """detect left red and right red like nrp
         pixelformat is guessed, but it seems to work"""
-        w = img_arr[0]  # width of the image, in pixels
-        h = img_arr[1]  # height of the image, in pixels
-        rgbBuffer = img_arr[2]  # color data RGB
-        depBuffer = img_arr[3]  # depth data
+        w = img[0]  # width of the image, in pixels
+        h = img[1]  # height of the image, in pixels
+        rgb_buffer = img[2]  # color data RGB
+        # dep_buffer = img_arr[3]  # depth data
         count_red_right = 0
         count_red_left = 0
         count_non_red = 0
         for y in range(h):
             for x in range(w):
                 pos = (y * w + x) * 4
-                r, g, b, a = (rgbBuffer[pos], rgbBuffer[pos + 1], rgbBuffer[pos + 2], rgbBuffer[pos + 3])
+                r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
                 if r > g and r > b:
                     if x > w / 2:
                         count_red_right = count_red_right + 1
@@ -169,6 +168,6 @@ class husky(object):
         return count_red_left, count_red_right, count_non_red
 
 
-my_word = world()
-my_robot = husky(brain=my_bain())
+my_word = World()
+my_robot = Husky(brain=Brain())
 my_word.loop(my_robot)
