@@ -37,6 +37,12 @@
 
 - bullet3/examples/pybullet/notebooks/HelloPyBullet.ipynb
 
+## issues
+
+primarily to let people know about issues. These don't have an impact on this practikum
+
+- https://github.com/nest/nest-simulator/issues/1229
+
 ## versucht und gescheitert
 
 ### virtual_room.sdl in pybullet
