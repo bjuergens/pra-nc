@@ -1,3 +1,5 @@
 
 nrp/
 .idea/
+.local/
+src/.ipynb_checkpoints/
