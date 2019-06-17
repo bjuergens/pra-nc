@@ -5,7 +5,7 @@ import time
 import pybullet as p
 import pybullet_data
 
-physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
+physicsClient = p.connect(p.DIRECT)  # p.DIRECT for non-graphical version
 
 
 class World(object):
@@ -54,8 +54,8 @@ class World(object):
 
             # render Camera at 10Hertz
             if now - last_robot_update_time > .1:
-                robot.maxForce = p.readUserDebugParameter(self.maxForceSlider)
-                robot.targetVelocity = p.readUserDebugParameter(self.targetVelocitySlider)
+                robot.maxForce = 100
+                robot.targetVelocity = 20
                 robot.update()
                 last_robot_update_time = now
             p.stepSimulation()
@@ -91,7 +91,6 @@ class Husky(object):
                                       basePosition=[0, 0, 1],
                                       baseOrientation=p.getQuaternionFromEuler([0, 0, 0]))
 
-        self.camInfo = p.getDebugVisualizerCamera()
         for joint in range(p.getNumJoints(self.husky_model)):
             # print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
             if p.getJointInfo(self.husky_model, joint)[1] == b'user_rail':
@@ -108,6 +107,7 @@ class Husky(object):
     def update(self):
         img = self.update_cam()
         count_result = self.count_red_pixels(img)
+        print(count_result)
         command_left, command_right = self.brain.process(*count_result)
         self.update_control(command_left, command_right)
 
@@ -136,10 +136,17 @@ class Husky(object):
                       cam_pos[1] + forward_vec[1] * 10,
                       cam_pos[2] + forward_vec[2] * 10]
         view_mat = p.computeViewMatrix(cam_pos, cam_target, cam_up_vec)
-        proj_mat = self.camInfo[3]
+        #proj_mat = self.camInfo[3]
         # getCameraImage seems to update the debug-view but I don't know why and how
-        return p.getCameraImage(15, 15, viewMatrix=view_mat, projectionMatrix=proj_mat,
-                                renderer=p.ER_BULLET_HARDWARE_OPENGL)
+
+        pixelWidth = 320
+        pixelHeight = 200
+        nearPlane = 0.01
+        farPlane = 100
+        fov = 60
+        aspect = pixelWidth / pixelHeight
+        proj_mat = p.computeProjectionMatrixFOV(fov, aspect, nearPlane, farPlane)
+        return p.getCameraImage(80, 80, viewMatrix=view_mat, projectionMatrix=proj_mat)
 
     @staticmethod
     def count_red_pixels(img):
