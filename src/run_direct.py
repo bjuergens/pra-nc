@@ -31,19 +31,13 @@ class World(object):
 
         p.setRealTimeSimulation(0)
 
-        self.targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -50, 20, 50)
-        self.maxForceSlider = p.addUserDebugParameter("maxForce", 0, 150, 100)
 
     def loop(self, robot):
         count_step = 0
-        last_robot_update_time = time.time()
         count_switch = 0
-        last_switch_time = 0
         while 1:
             count_step = count_step + 1
-            now = time.time()
-            if now - last_switch_time > 5:
-                last_switch_time = now
+            if count_step % 5000 == 1:
                 count_switch = count_switch + 1
                 if count_switch % 2 == 0:
                     p.changeVisualShape(self.planeA, -1, rgbaColor=self.green)
@@ -52,12 +46,11 @@ class World(object):
                     p.changeVisualShape(self.planeA, -1, rgbaColor=self.red)
                     p.changeVisualShape(self.planeB, -1, rgbaColor=self.green)
 
-            # render Camera at 10Hertz
-            if now - last_robot_update_time > .1:
-                robot.maxForce = 100
+            # render Camera slower
+            if count_step % 50 == 0:
+                robot.maxForce = 20
                 robot.targetVelocity = 20
                 robot.update()
-                last_robot_update_time = now
             p.stepSimulation()
             time.sleep(0.0005)
 
@@ -91,6 +84,7 @@ class Husky(object):
                                       basePosition=[0, 0, 1],
                                       baseOrientation=p.getQuaternionFromEuler([0, 0, 0]))
 
+        # self.camInfo = p.getDebugVisualizerCamera()
         for joint in range(p.getNumJoints(self.husky_model)):
             # print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
             if p.getJointInfo(self.husky_model, joint)[1] == b'user_rail':
@@ -136,17 +130,11 @@ class Husky(object):
                       cam_pos[1] + forward_vec[1] * 10,
                       cam_pos[2] + forward_vec[2] * 10]
         view_mat = p.computeViewMatrix(cam_pos, cam_target, cam_up_vec)
-        #proj_mat = self.camInfo[3]
-        # getCameraImage seems to update the debug-view but I don't know why and how
+        # proj_mat = self.camInfo[3]
+        proj_mat = (0.7499999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0000200271606445, -1.0, 0.0, 0.0, -0.02000020071864128, 0.0)
 
-        pixelWidth = 320
-        pixelHeight = 200
-        nearPlane = 0.01
-        farPlane = 100
-        fov = 60
-        aspect = pixelWidth / pixelHeight
-        proj_mat = p.computeProjectionMatrixFOV(fov, aspect, nearPlane, farPlane)
-        return p.getCameraImage(80, 80, viewMatrix=view_mat, projectionMatrix=proj_mat)
+        # getCameraImage seems to update the debug-view but I don't know why and how
+        return p.getCameraImage(15, 15, viewMatrix=view_mat, projectionMatrix=proj_mat)
 
     @staticmethod
     def count_red_pixels(img):
@@ -161,8 +149,12 @@ class Husky(object):
         count_non_red = 0
         for y in range(h):
             for x in range(w):
-                pos = (y * w + x) * 4
-                r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
+                # numpy image
+                r, g, b, a = (rgb_buffer[y][x][0], rgb_buffer[y][x][1], rgb_buffer[y][x][2], rgb_buffer[y][x][3])
+
+                # non-numpy image
+                # pos = (y * w + x) * 4
+                # r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
                 if r > g and r > b:
                     if x > w / 2:
                         count_red_right = count_red_right + 1
