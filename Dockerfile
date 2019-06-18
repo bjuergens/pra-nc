@@ -54,15 +54,28 @@ RUN cd nest-build && make && make install
 ### pybullet
 ##################
 
+# need to compile myself so numpy is used for getCameraImage
 # todo: nest braucht python2, glaube ich. Soll das project in python2 oder python3 gemacht werden?
-RUN apt-get update && apt-get install -y python3-pip python3-dev python3
+RUN apt-get update && apt-get install -y python3-pip python3-dev python3 && pip3 install numpy
+
+
+RUN git clone --recurse-submodules https://github.com/bulletphysics/bullet3.git \
+ && cd bullet3 \
+ && ./build_cmake_pybullet_double.sh
+
+USER root
+RUN chown -R $NB_UID /home/jovyan
 
 USER $NB_UID
-ENV JUPYTER_PATH=<directory_for_your_module>:$JUPYTER_PATH
+RUN cd bullet3 && python3 -m pip install .
+
+
+
+# ENV JUPYTER_PATH=<directory_for_your_module>:$JUPYTER_PATH
 
 RUN mkdir pra
 WORKDIR pra
 ADD requirements.txt requirements.txt
-RUN python3 -m pip install -r requirements.txt
+# RUN python3 -m pip install -r requirements.txt
 ADD . .
 # CMD ./src/run.py
