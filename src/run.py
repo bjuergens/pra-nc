@@ -36,14 +36,10 @@ class World(object):
 
     def loop(self, robot):
         count_step = 0
-        last_robot_update_time = time.time()
         count_switch = 0
-        last_switch_time = 0
         while 1:
             count_step = count_step + 1
-            now = time.time()
-            if now - last_switch_time > 5:
-                last_switch_time = now
+            if count_step % 5000 == 1:
                 count_switch = count_switch + 1
                 if count_switch % 2 == 0:
                     p.changeVisualShape(self.planeA, -1, rgbaColor=self.green)
@@ -52,12 +48,11 @@ class World(object):
                     p.changeVisualShape(self.planeA, -1, rgbaColor=self.red)
                     p.changeVisualShape(self.planeB, -1, rgbaColor=self.green)
 
-            # render Camera at 10Hertz
-            if now - last_robot_update_time > .1:
+            # render Camera slower
+            if count_step % 50 == 0:
                 robot.maxForce = p.readUserDebugParameter(self.maxForceSlider)
                 robot.targetVelocity = p.readUserDebugParameter(self.targetVelocitySlider)
                 robot.update()
-                last_robot_update_time = now
             p.stepSimulation()
             time.sleep(0.0005)
 
@@ -108,6 +103,7 @@ class Husky(object):
     def update(self):
         img = self.update_cam()
         count_result = self.count_red_pixels(img)
+        print(count_result)
         command_left, command_right = self.brain.process(*count_result)
         self.update_control(command_left, command_right)
 
@@ -154,8 +150,12 @@ class Husky(object):
         count_non_red = 0
         for y in range(h):
             for x in range(w):
-                pos = (y * w + x) * 4
-                r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
+                # numpy image
+                r, g, b, a = (rgb_buffer[y][x][0], rgb_buffer[y][x][1], rgb_buffer[y][x][2], rgb_buffer[y][x][3])
+
+                # non-numpy image
+                # pos = (y * w + x) * 4
+                # r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
                 if r > g and r > b:
                     if x > w / 2:
                         count_red_right = count_red_right + 1
