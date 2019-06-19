@@ -2,17 +2,19 @@
 
 import time
 
+import numpy as np
 import pybullet as p
 import pybullet_data
-import numpy as np
 
-physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
 
 
 class World(object):
     green = [0, 1, 0, 1]
     blue = [0, 0, 1, 1]
     red = [1, 0, 0, 1]
+
+    count_steps = 0
+    count_switch = 0
 
     def __init__(self):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
@@ -32,28 +34,18 @@ class World(object):
 
         p.setRealTimeSimulation(0)
 
-    def loop(self, robot):
-        count_step = 0
-        count_switch = 0
-        while 1:
-            count_step = count_step + 1
-            # print(count_step)
-            if count_step % 5000 == 1:
-                count_switch = count_switch + 1
-                if count_switch % 2 == 0:
-                    p.changeVisualShape(self.planeA, -1, rgbaColor=self.green)
-                    p.changeVisualShape(self.planeB, -1, rgbaColor=self.red)
-                else:
-                    p.changeVisualShape(self.planeA, -1, rgbaColor=self.red)
-                    p.changeVisualShape(self.planeB, -1, rgbaColor=self.green)
+    def do_step(self):
+        self.count_steps = self.count_steps + 1
+        if self.count_steps % 5000 == 1:
+            self.count_switch = self.count_switch + 1
+            if self.count_switch % 2 == 0:
+                p.changeVisualShape(self.planeA, -1, rgbaColor=self.green)
+                p.changeVisualShape(self.planeB, -1, rgbaColor=self.red)
+            else:
+                p.changeVisualShape(self.planeA, -1, rgbaColor=self.red)
+                p.changeVisualShape(self.planeB, -1, rgbaColor=self.green)
 
-            # render Camera slower
-            if count_step % 20 == 0:
-                robot.maxForce = 20
-                robot.targetVelocity = 20
-                robot.update()
-            p.stepSimulation()
-            # time.sleep(0.0005)
+        p.stepSimulation()
 
 
 class Brain(object):
@@ -79,13 +71,22 @@ class Husky(object):
     maxForce = 0
     targetVelocity = 0
 
+    class Camera(object):
+        init_camera_vector = (1, 0, 0)
+        init_up_vector = (0, 0, 1)
+
+        def __init__(self, pixel_width=80, pixel_height=80, near_plane=0.1, far_plane=100, fov=100):
+            self.pixel_width = pixel_width
+            self.pixel_height = pixel_height
+            self.projection_mat = p.computeProjectionMatrixFOV(fov, pixel_width / pixel_height, near_plane, far_plane)
+
     def __init__(self, brain):
         self.brain = brain
+        self.camera = Husky.Camera()
         self.husky_model = p.loadURDF("husky/husky.urdf",
                                       basePosition=[0, 0, 1],
                                       baseOrientation=p.getQuaternionFromEuler([0, 0, 0]))
 
-        # self.camInfo = p.getDebugVisualizerCamera()
         for joint in range(p.getNumJoints(self.husky_model)):
             # print("joint[", joint, "]=", p.getJointInfo(self.husky_model, joint))
             if p.getJointInfo(self.husky_model, joint)[1] == b'user_rail':
@@ -102,9 +103,9 @@ class Husky(object):
     def update(self):
         img = self.update_cam()
         count_result = self.count_red_pixels(img)
-        print(count_result)
         command_left, command_right = self.brain.process(*count_result)
         self.update_control(command_left, command_right)
+        return img
 
     def update_control(self, command_left, command_right):
         p.setJointMotorControl2(self.husky_model, self.front_left_wheel, p.VELOCITY_CONTROL,
@@ -121,48 +122,20 @@ class Husky(object):
                                 force=self.maxForce)
 
     def update_cam(self):
+        joint_pos, joint_orn, _, _, _, _ = p.getLinkState(self.husky_model, self.zed_camera_joint,
+                                                          computeForwardKinematics=True)
+        cam_rot = np.array(p.getMatrixFromQuaternion(joint_orn)).reshape(3, 3)
+        cam_direction = cam_rot.dot(self.camera.init_camera_vector)
+        cam_up_vec = cam_rot.dot(self.camera.init_up_vector)
+        # note: if cam is exactly on joint, getCameraImage freezes sometimes
+        cam_pos = joint_pos - (cam_direction * 1.0)
+        cam_target = joint_pos + (cam_direction * 1.0)
+        view_mat = p.computeViewMatrix(cam_pos, cam_target, cam_up_vec)
 
-        init_camera_vector = (1, 0, 0)  # z-axis
-        init_up_vector = (0, 1, 0)  # y-axis
-        print(self.zed_camera_joint)
-        ls = p.getLinkState(self.husky_model, self.zed_camera_joint, computeForwardKinematics=True)
-        cam_pos = [ls[0][0], ls[0][1], ls[0][2]]
-        cam_orn = ls[1]
-        cam_mat = p.getMatrixFromQuaternion(cam_orn)
-        cam_mat2 = np.array(p.getMatrixFromQuaternion(cam_orn)).reshape(3, 3)
-        target = cam_mat2.dot (init_camera_vector)
-        # forward_vec = [cam_mat[0], cam_mat[3], cam_mat[6]]
-        forward_vec = cam_orn
-        # cam_up_vec = [cam_mat[2], cam_mat[5], cam_mat[8]]
-        cam_up_vec =  cam_mat2.dot (init_up_vector)
-        cam_target = [cam_pos[0] + forward_vec[0] * 10,
-                      cam_pos[1] + forward_vec[1] * 10,
-                      cam_pos[2] + forward_vec[2] * 10]
-
-        cam_target = cam_pos + (target * 0.5)
-        view_mat = p.computeViewMatrix(cam_pos - (target * 1.0), cam_target, cam_up_vec)
-
-        com_p, com_o, _, _, _, _ = p.getLinkState(self.husky_model, self.zed_camera_joint,
-                                                  computeForwardKinematics=True)
-        rot_matrix = p.getMatrixFromQuaternion(com_o)
-        rot_matrix = np.array(rot_matrix).reshape(3, 3)
-        # Initial vectors
-        init_camera_vector = (0, 0, 1)  # z-axis
-        init_up_vector = (0, 1, 0)  # y-axis
-        # Rotated vectors
-        camera_vector = rot_matrix.dot(init_camera_vector)
-        up_vector = rot_matrix.dot(init_up_vector)
-        view_matrix = p.computeViewMatrix(com_p, com_p + 0.1 * camera_vector, up_vector)
-
-        pixelWidth = 80
-        pixelHeight = 80
-        # this proj_mat is what the debug-renderer uses. It seems to work
-        proj_mat = (
-            0.7499999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0000200271606445, -1.0, 0.0, 0.0,
-            -0.02000020071864128, 0.0)
-
-        print("getCameraImage2")
-        return p.getCameraImage(pixelWidth, pixelHeight, viewMatrix=view_mat, projectionMatrix=proj_mat,
+        return p.getCameraImage(self.camera.pixel_width,
+                                self.camera.pixel_height,
+                                viewMatrix=view_mat,
+                                projectionMatrix=self.camera.projection_mat,
                                 flags=p.ER_NO_SEGMENTATION_MASK)
 
     @staticmethod
@@ -181,9 +154,6 @@ class Husky(object):
                 # numpy image
                 r, g, b, a = (rgb_buffer[y][x][0], rgb_buffer[y][x][1], rgb_buffer[y][x][2], rgb_buffer[y][x][3])
 
-                # non-numpy image
-                # pos = (y * w + x) * 4
-                # r, g, b, a = (rgb_buffer[pos], rgb_buffer[pos + 1], rgb_buffer[pos + 2], rgb_buffer[pos + 3])
                 if r > g and r > b:
                     if x > w / 2:
                         count_red_right = count_red_right + 1
@@ -193,7 +163,18 @@ class Husky(object):
                     count_non_red = count_non_red + 1
         return count_red_left, count_red_right, count_non_red
 
+print("import done")
 
-my_word = World()
-my_robot = Husky(brain=Brain())
-my_word.loop(my_robot)
+if __name__ == "__main__":
+    physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
+    my_word = World()
+    my_robot = Husky(brain=Brain())
+    while 1:
+        my_word.do_step()
+        if my_word.count_steps % 20 == 0:
+            print(my_word.count_steps)
+            my_robot.maxForce = 150
+            my_robot.targetVelocity = 20
+            my_robot.update()
+
+        time.sleep(0.0005)
