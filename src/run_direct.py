@@ -4,6 +4,7 @@ import time
 
 import pybullet as p
 import pybullet_data
+import numpy as np
 
 physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
 
@@ -31,13 +32,12 @@ class World(object):
 
         p.setRealTimeSimulation(0)
 
-
     def loop(self, robot):
         count_step = 0
         count_switch = 0
         while 1:
             count_step = count_step + 1
-            print(count_step)
+            # print(count_step)
             if count_step % 5000 == 1:
                 count_switch = count_switch + 1
                 if count_switch % 2 == 0:
@@ -48,7 +48,7 @@ class World(object):
                     p.changeVisualShape(self.planeB, -1, rgbaColor=self.green)
 
             # render Camera slower
-            if count_step % 50 == 0:
+            if count_step % 20 == 0:
                 robot.maxForce = 20
                 robot.targetVelocity = 20
                 robot.update()
@@ -121,22 +121,49 @@ class Husky(object):
                                 force=self.maxForce)
 
     def update_cam(self):
+
+        init_camera_vector = (1, 0, 0)  # z-axis
+        init_up_vector = (0, 1, 0)  # y-axis
+        print(self.zed_camera_joint)
         ls = p.getLinkState(self.husky_model, self.zed_camera_joint, computeForwardKinematics=True)
-        cam_pos = ls[0]
+        cam_pos = [ls[0][0], ls[0][1], ls[0][2]]
         cam_orn = ls[1]
         cam_mat = p.getMatrixFromQuaternion(cam_orn)
-        forward_vec = [cam_mat[0], cam_mat[3], cam_mat[6]]
-        cam_up_vec = [cam_mat[2], cam_mat[5], cam_mat[8]]
+        cam_mat2 = np.array(p.getMatrixFromQuaternion(cam_orn)).reshape(3, 3)
+        target = cam_mat2.dot (init_camera_vector)
+        # forward_vec = [cam_mat[0], cam_mat[3], cam_mat[6]]
+        forward_vec = cam_orn
+        # cam_up_vec = [cam_mat[2], cam_mat[5], cam_mat[8]]
+        cam_up_vec =  cam_mat2.dot (init_up_vector)
         cam_target = [cam_pos[0] + forward_vec[0] * 10,
                       cam_pos[1] + forward_vec[1] * 10,
                       cam_pos[2] + forward_vec[2] * 10]
-        view_mat = p.computeViewMatrix(cam_pos, cam_target, cam_up_vec)
-        # proj_mat = self.camInfo[3]
-        proj_mat = (0.7499999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0000200271606445, -1.0, 0.0, 0.0, -0.02000020071864128, 0.0)
 
-        # getCameraImage seems to update the debug-view but I don't know why and how
-        return p.getCameraImage(15, 15, viewMatrix=view_mat, projectionMatrix=proj_mat)
-        # renderer=p.ER_BULLET_HARDWARE_OPENGL
+        cam_target = cam_pos + (target * 0.5)
+        view_mat = p.computeViewMatrix(cam_pos - (target * 1.0), cam_target, cam_up_vec)
+
+        com_p, com_o, _, _, _, _ = p.getLinkState(self.husky_model, self.zed_camera_joint,
+                                                  computeForwardKinematics=True)
+        rot_matrix = p.getMatrixFromQuaternion(com_o)
+        rot_matrix = np.array(rot_matrix).reshape(3, 3)
+        # Initial vectors
+        init_camera_vector = (0, 0, 1)  # z-axis
+        init_up_vector = (0, 1, 0)  # y-axis
+        # Rotated vectors
+        camera_vector = rot_matrix.dot(init_camera_vector)
+        up_vector = rot_matrix.dot(init_up_vector)
+        view_matrix = p.computeViewMatrix(com_p, com_p + 0.1 * camera_vector, up_vector)
+
+        pixelWidth = 80
+        pixelHeight = 80
+        # this proj_mat is what the debug-renderer uses. It seems to work
+        proj_mat = (
+            0.7499999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0000200271606445, -1.0, 0.0, 0.0,
+            -0.02000020071864128, 0.0)
+
+        print("getCameraImage2")
+        return p.getCameraImage(pixelWidth, pixelHeight, viewMatrix=view_mat, projectionMatrix=proj_mat,
+                                flags=p.ER_NO_SEGMENTATION_MASK)
 
     @staticmethod
     def count_red_pixels(img):

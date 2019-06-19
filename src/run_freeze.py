@@ -3,7 +3,7 @@ import pybullet as p
 import pybullet_data
 import numpy as np
 
-physicsClient = p.connect(p.DIRECT)  # p.DIRECT for non-graphical version
+physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
 
 class World(object):
     def __init__(self):
