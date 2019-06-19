@@ -3,7 +3,7 @@ import pybullet as p
 import pybullet_data
 import numpy as np
 
-physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
+physicsClient = p.connect(p.DIRECT)  # p.DIRECT for non-graphical version
 
 class World(object):
     def __init__(self):
@@ -39,6 +39,7 @@ class Husky(object):
         cam_pos = [ls[0][0],ls[0][1],ls[0][2]]
         cam_orn = ls[1]
         cam_mat = p.getMatrixFromQuaternion(cam_orn)
+        cam_mat2 = np.array(p.getMatrixFromQuaternion(cam_orn)).reshape(3,3)
         # forward_vec = [cam_mat[0], cam_mat[3], cam_mat[6]]
         forward_vec = cam_orn
         cam_up_vec = [cam_mat[2], cam_mat[5], cam_mat[8]]

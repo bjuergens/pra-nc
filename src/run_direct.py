@@ -5,7 +5,7 @@ import time
 import pybullet as p
 import pybullet_data
 
-physicsClient = p.connect(p.DIRECT)  # p.DIRECT for non-graphical version
+physicsClient = p.connect(p.GUI)  # p.DIRECT for non-graphical version
 
 
 class World(object):
@@ -37,6 +37,7 @@ class World(object):
         count_switch = 0
         while 1:
             count_step = count_step + 1
+            print(count_step)
             if count_step % 5000 == 1:
                 count_switch = count_switch + 1
                 if count_switch % 2 == 0:
@@ -52,7 +53,7 @@ class World(object):
                 robot.targetVelocity = 20
                 robot.update()
             p.stepSimulation()
-            time.sleep(0.0005)
+            # time.sleep(0.0005)
 
 
 class Brain(object):
@@ -135,6 +136,7 @@ class Husky(object):
 
         # getCameraImage seems to update the debug-view but I don't know why and how
         return p.getCameraImage(15, 15, viewMatrix=view_mat, projectionMatrix=proj_mat)
+        # renderer=p.ER_BULLET_HARDWARE_OPENGL
 
     @staticmethod
     def count_red_pixels(img):
