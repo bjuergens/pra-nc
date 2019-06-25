@@ -33,8 +33,7 @@ from pyNN.utility import get_simulator, init_logging, normalized_filename
 from pyNN.utility.plotting import DataTable
 from pyNN.parameters import Sequence
 
-from braitenberg import create_brain
-brain, proj1, proj2, proj3, proj4, proj5, proj6 = create_brain()
+from braitenberg import circuit as population
 
 
 
@@ -50,13 +49,18 @@ if options.debug:
 
 sim.setup(timestep=1, min_delay=1, max_delay=3)
 t_stop = 30
-brain.record('spikes')
-# brain.record(['spikes', 'v'])
 
-for a in range(200):
+# print("Circuit description: " + str(population.describe()))
+population.record('spikes')
+# sim.record('spikes', population, filename="test.pkl")
+# brain.record(['spikes', 'v'])
+for a in range(2000):
     print(a)
     sim.run(t_stop)
+    # data = population.get_data()
+    # print(data)
 
+population.write_data("a.pkl")
 sim.end()
 
 print("end reached")

@@ -82,8 +82,19 @@ USER $NB_UID
 RUN cd bullet3 && python3 -m pip install .
 
 
+ENV NEST_INSTALL_DIR=/usr/bin/nest
+ENV NEST_DATA_DIR=$NEST_INSTALL_DIR/share/nest
+ENV NEST_DOC_DIR=$NEST_INSTALL_DIR/share/doc/nest
+ENV NEST_MODULE_PATH=$NEST_INSTALL_DIR/lib/nest
+ENV NEST_PYTHON_PREFIX=$NEST_INSTALL_DIR/lib/python3.7/site-packages
+ENV PYTHONPATH=$NEST_PYTHON_PREFIX:$PYTHONPATH
+ENV PATH=$NEST_INSTALL_DIR/bin:$PATH
+
+
 
 # ENV JUPYTER_PATH=<directory_for_your_module>:$JUPYTER_PATH
+
+RUN python3 -m pip install --no-binary :all:  PyNN
 
 RUN mkdir pra
 WORKDIR pra
