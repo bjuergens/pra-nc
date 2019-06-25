@@ -5,3 +5,5 @@ nrp/
 src/.ipynb_checkpoints/
 src/__pycache__/
 *.pyc
+
+experiment_dl/Results/

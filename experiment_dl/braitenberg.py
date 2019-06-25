@@ -61,12 +61,13 @@ def create_brain():
 
     SYN = sim.TsodyksMarkramSynapse(weight=abs(WEIGHT_RED_TO_ACTOR),
                                     delay=DELAY, **syn_params)
-    sim.Projection(presynaptic_population=CIRCUIT[2:3],
+    p=[None,None,None,None,None,None,]
+    proj1 =sim.Projection(presynaptic_population=CIRCUIT[2:3],
                    postsynaptic_population=CIRCUIT[7:8],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
                    receptor_type='excitatory')
-    sim.Projection(presynaptic_population=CIRCUIT[3:4],
+    proj2 =sim.Projection(presynaptic_population=CIRCUIT[3:4],
                    postsynaptic_population=CIRCUIT[6:7],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
@@ -74,12 +75,12 @@ def create_brain():
 
     SYN = sim.TsodyksMarkramSynapse(weight=abs(WEIGHT_RED_TO_GO_ON),
                                     delay=DELAY, **syn_params)
-    sim.Projection(presynaptic_population=CIRCUIT[0:2],
+    proj3 =sim.Projection(presynaptic_population=CIRCUIT[0:2],
                    postsynaptic_population=CIRCUIT[4:5],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
                    receptor_type='inhibitory')
-    sim.Projection(presynaptic_population=CIRCUIT[0:2],
+    proj4 =sim.Projection(presynaptic_population=CIRCUIT[0:2],
                    postsynaptic_population=CIRCUIT[5:6],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
@@ -87,7 +88,7 @@ def create_brain():
 
     SYN = sim.TsodyksMarkramSynapse(weight=abs(WEIGHT_GREEN_BLUE_TO_ACTOR),
                                     delay=DELAY, **syn_params)
-    sim.Projection(presynaptic_population=CIRCUIT[4:5],
+    proj5 =sim.Projection(presynaptic_population=CIRCUIT[4:5],
                    postsynaptic_population=CIRCUIT[7:8],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
@@ -95,7 +96,7 @@ def create_brain():
 
     SYN = sim.TsodyksMarkramSynapse(weight=abs(WEIGHT_GO_ON_TO_RIGHT_ACTOR),
                                     delay=DELAY, **syn_params)
-    sim.Projection(presynaptic_population=CIRCUIT[5:6],
+    proj6 = sim.Projection(presynaptic_population=CIRCUIT[5:6],
                    postsynaptic_population=CIRCUIT[7:8],
                    connector=sim.AllToAllConnector(),
                    synapse_type=SYN,
@@ -103,9 +104,9 @@ def create_brain():
 
     sim.initialize(population, v=population.get('v_rest'))
 
-    logger.debug("Circuit description: " + str(population.describe()))
+    print("Circuit description: " + str(population.describe()))
 
-    return population
+    return population, proj1, proj2, proj3,proj4, proj5, proj6
 
 
 circuit = create_brain()
