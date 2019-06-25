@@ -1,7 +1,5 @@
-# FROM ubuntu:bionic
-
 FROM jupyter/scipy-notebook
-
+ENV cache_breaker 2019_06_20
 USER root
 
 RUN apt-get update && apt-get dist-upgrade -y
@@ -22,9 +20,20 @@ RUN apt-get update && apt-get install -y build-essential cmake libltdl7-dev libr
 ##################
 
 RUN git clone https://github.com/INCF/libneurosim.git \
-    && cd libneurosim && touch README && autoreconf --install --force && autoconf configure.ac && ./configure && make \
-    && make check && make install && make clean distclean \
+    && cd libneurosim \
+    && touch README \
+    && autoreconf --install --force \
+    && autoconf configure.ac \
+    && ./configure  --with-python=3  --prefix=/libneurosim.install \
+    && make && make check && make install && make clean distclean \
     && cd .. && rm -rf libneurosim
+
+# workaround for nest issue #1080
+RUN cd /libneurosim.install/lib \
+    && ln -s libpy3neurosim.la libpyneurosim.la \
+    && ln -s libpy3neurosim.a libpyneurosim.a\
+    && ln -s libpy3neurosim.so libpyneurosim.so\
+    && ln -s libpy3neurosim.so.0.0.0 libpyneurosim.so.0.0.0
 
 
 ##################
@@ -37,7 +46,10 @@ RUN wget https://codeload.github.com/nest/nest-simulator/tar.gz/v2.16.0 && \
 
 
 RUN mkdir /usr/bin/nest && mkdir nest-build && cd nest-build  && \
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/bin/nest -Dwith-gsl=ON -Dwith-libneurosim=/usr/local/bin/libneurosim /home/jovyan/nest-simulator-2.16.0
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/bin/nest \
+     -Dwith-gsl=ON \
+     -Dwith-libneurosim=/libneurosim.install \
+     /home/jovyan/nest-simulator-2.16.0
 
 #  -Dwith-gsl=ON -Dwith-mpi=ON -Dwith-music=ON
 
