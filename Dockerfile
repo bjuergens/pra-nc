@@ -96,6 +96,11 @@ ENV PATH=$NEST_INSTALL_DIR/bin:$PATH
 
 RUN python3 -m pip install --no-binary :all:  PyNN
 
+RUN python3 -m pip install ipympl
+
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager \
+    && jupyter labextension install jupyter-matplotlib
+
 RUN mkdir pra
 WORKDIR pra
 ADD requirements.txt requirements.txt
