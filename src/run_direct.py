@@ -141,7 +141,8 @@ class Husky(object):
     @staticmethod
     def count_red_pixels(img):
         """detect left red and right red like nrp
-        pixelformat is guessed, but it seems to work"""
+        pixelformat is guessed, but it seems to work.
+        this functions tries to reproduce https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.1.5/codedoc/hbp_nrp_cle.tf_framework.html#hbp_nrp_cle.tf_framework.tf_lib.detect_red"""
         w = img[0]  # width of the image, in pixels
         h = img[1]  # height of the image, in pixels
         rgb_buffer = img[2]  # color data RGB
@@ -161,7 +162,9 @@ class Husky(object):
                         count_red_left = count_red_left + 1
                 else:
                     count_non_red = count_non_red + 1
-        return count_red_left, count_red_right, count_non_red
+
+        total = count_red_left + count_red_right + count_non_red
+        return count_red_left/total, count_red_right/total, count_non_red/total
 
 print("import done")
 
