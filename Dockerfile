@@ -101,9 +101,11 @@ RUN python3 -m pip install ipympl
 RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager \
     && jupyter labextension install jupyter-matplotlib
 
+# requirements already part of base-notebook
+# ADD requirements.txt requirements.txt
+
 RUN mkdir pra
 WORKDIR pra
-ADD requirements.txt requirements.txt
 # RUN python3 -m pip install -r requirements.txt
-ADD . .
+ADD neuro_robotic.ipynb neuro_robotic_readonly.ipynb
 # CMD ./src/run.py
